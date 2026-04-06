@@ -3,7 +3,6 @@ name: Other
 about: Whatever does not apply to a bug nor to a feature request
 title: "[Other]"
 labels: help wanted, question
-assignees: LucaTedeschini, MatteoFasulo, ElektroDuck, GravAnt
 
 ---
 

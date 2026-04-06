@@ -1,67 +1,120 @@
-# Bayesian Network for Heart Disease Risk Assessment
+# Bayesian Heart Disease Risk Assessment
 
-This repository encompasses the code and report for the "Fundamentals of Artificial Intelligence and Knowledge Representation (Mod. 3)" course at Alma Mater Studiorum Università di Bologna.
+This is an **end-to-end project**, not only a source repository: it covers **data and modelling** (Jupyter notebook), **serialized Bayesian networks** for reuse, **written documentation** (LaTeX report), and a **small web application** (FastAPI backend + React client) for interactive inference. The repository bundles these deliverables so the work can be reproduced, extended, and demonstrated.
 
-## Authors
+## Contents
 
-- [Matteo Fasulo](https://github.com/MatteoFasulo)
-- [Luca Tedeschini](https://github.com/LucaTedeschini)
-- [Antonio Gravina](https://github.com/GravAnt)
-- [Luca Babboni](https://github.com/ElektroDuck)
+| Part | Description |
+|------|-------------|
+| `notebook.ipynb` | Full analysis pipeline (preprocessing, Hill climbing, domain network, inference). |
+| `model/` | Trained network as **BIF** and **XML** (used by the API). |
+| `api/` | FastAPI service: loads the BIF, exposes `/api/schema` and `/api/predict`. |
+| `frontend/` | Vite + React UI for evidence entry and **P(heart disease)**. |
+| `latex/` | Report PDF sources. |
+| `data/` | Raw and cleaned CSVs. |
 
-## Report
+## Prerequisites
 
-The pdf report is available [here](https://matteofasulo.github.io/BayesianHeartDisease/report.pdf).
+- **Python 3.11+** (recommended: match `requirements.txt` / `api/requirements.txt` pins).
+- **Node.js 18+** and npm (for the frontend).
+- Optional: **Graphviz** system package if you need `pygraphviz` / notebook graph layouts (`brew install graphviz` on macOS).
 
-## Abstract
+## Quick start — Web app (React + API)
 
-Cardiovascular disease (CVD) remains a significant cause of mortality in Europe, imposing both health and economic challenges. Timely and accurate prediction is crucial for effective prevention and intervention strategies. Identifying modifiable and non-modifiable risk factors is essential, as lifestyle changes can significantly impact individual health.
-
-Bayesian networks (BNs) have emerged as valuable tools in healthcare for handling complex data and analyzing interactions among various risk factors. They've proven successful in assessing CVD risk, aiding real-time diagnosis, and predicting hidden patient conditions.
-
-Our work, inspired by [Ordovas et al. (2023)](https://doi.org/10.1016/j.cmpb.2023.107405), aimed to replicate their BN-based CVD risk prediction using a different dataset. Additionally, we sought to explore the broader potential of BNs in CVD risk assessment, conducting in-depth analyses beyond the original paper.
-
-## How to clone the repository?
-
-Since the repository contains a submodule, the following command should be used to clone the repository:
+**1. API** (from `api/`):
 
 ```bash
-git clone --recursive https://github.com/MatteoFasulo/BayesianHeartDisease.git
+cd api
+python3.11 -m venv .venv && source .venv/bin/activate   # optional venv
+python3.11 -m pip install -r requirements.txt
+python3.11 -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
-## Dashboard
+**2. Frontend** (new terminal, from `frontend/`):
 
-> The Web App is publicly available at [heart-disease-risk.streamlit.app](https://heart-disease-risk.streamlit.app)
+```bash
+cd frontend
+npm install
+VITE_API_PORT=8001 npm run dev
+```
 
-## Source
+Open **http://localhost:5173**. The dev server proxies `/api` to the API port set by **`VITE_API_PORT`** (here **8001**).
 
-Datasets used are accessible in the UCI Machine Learning Repository's Index of heart disease datasets: [UCI Heart Disease Datasets](https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/)
+**Busy ports:** use another UI port, e.g. `VITE_API_PORT=8001 VITE_DEV_PORT=5175 npm run dev` (see `npm run dev:5175` in `frontend/package.json`).
 
-## Dataset
+**Model path:** override with `MODEL_PATH=/absolute/path/to/heart_disease_model.bif` when starting uvicorn if the file is not at `../model/` relative to `api/main.py`.
 
->fedesoriano. (September 2021). Heart Failure Prediction Dataset. Retrieved March 2024 from [Kaggle](https://www.kaggle.com/fedesoriano/heart-failure-prediction).
+## API (summary)
 
-## Acknowledgements
+| Method | Path | Purpose |
+|--------|------|---------|
+| `GET` | `/api/health` | Liveness and model path. |
+| `GET` | `/api/schema` | Target variable and allowed state labels per variable. |
+| `POST` | `/api/predict` | JSON body `{"evidence":{"Age":"40-50","Sex":"M",...}}` — omit keys to marginalize. Returns `heart_disease` probabilities and `probability_positive` (state `1`). |
 
-1. Hungarian Institute of Cardiology, Budapest: Andras Janosi, M.D.
-2. University Hospital, Zurich, Switzerland: William Steinbrunn, M.D.
-3. University Hospital, Basel, Switzerland: Matthias Pfisterer, M.D.
+## Notebook (analysis)
+
+```bash
+python3.11 -m venv .venv && source .venv/bin/activate
+python3.11 -m pip install -r requirements.txt jupyter
+python3.11 -m jupyter notebook notebook.ipynb
+```
+
+Pinned stacks (NumPy 1.x, pandas 2.x, pgmpy 0.1.x) avoid known breakage with newer major versions; see `requirements.txt`.
+
+## Report (PDF)
+
+From `latex/`, build with your usual tool, e.g.:
+
+```bash
+cd latex && latexmk -pdf main.tex
+```
+
+## Clone & optional submodule
+
+```bash
+git clone https://github.com/yuvraj20gole/BayesianHeartDisease.git
+cd BayesianHeartDisease
+```
+
+The **Streamlit** reference app is optional. If you use the `HeartDisease-Dashboard` submodule, set the **`url`** in `.gitmodules` to a repo you can access, then:
+
+```bash
+git submodule update --init --recursive
+```
+
+A public example deployment: [heart-disease-risk.streamlit.app](https://heart-disease-risk.streamlit.app).
+
+## Background
+
+Cardiovascular disease (CVD) remains a major cause of mortality worldwide. Bayesian networks help model interactions among risk factors and support probabilistic prediction. The modelling approach is inspired by [Ordovas et al. (2023)](https://doi.org/10.1016/j.cmpb.2023.107405), using a different dataset and additional analyses described in the notebook and report.
+
+## Data & credits
+
+- **Primary dataset:** [Kaggle — Heart Failure Prediction](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction).
+- **UCI** heart disease resources: [UCI ML Repository](https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/).
+
+## Acknowledgements (data sources)
+
+1. Hungarian Institute of Cardiology, Budapest: Andras Janosi, M.D.  
+2. University Hospital, Zurich, Switzerland: William Steinbrunn, M.D.  
+3. University Hospital, Basel, Switzerland: Matthias Pfisterer, M.D.  
 4. V.A. Medical Center, Long Beach and Cleveland Clinic Foundation: Robert Detrano, M.D., Ph.D.
 
 ## References
 
 [1] Wilkins, E., et al. (2017). European Cardiovascular Disease Statistics 2017. European Heart Network. [CVD Statistics Report](http://www.ehnheart.org/images/CVD-statistics-report-August-2017.pdf)
 
-[2] Mahmood, S. S., et al. (2014). The Framingham Heart Study and the epidemiology of cardiovascular disease: a historical perspective. Lancet (London, England), 383(9921), 999–1008. [DOI](https://doi.org/10.1016/S0140-6736(13)61752-3)
+[2] Mahmood, S. S., et al. (2014). The Framingham Heart Study and the epidemiology of cardiovascular disease: a historical perspective. *Lancet*, 383(9921), 999–1008. [DOI](https://doi.org/10.1016/S0140-6736(13)61752-3)
 
-[3] WHO CVD Risk Chart Working Group (2019). World Health Organization cardiovascular disease risk charts: revised models to estimate risk in 21 global regions. The Lancet. Global health, 7(10), e1332–e1345. [DOI](https://doi.org/10.1016/S2214-109X(19)30318-3)
+[3] WHO CVD Risk Chart Working Group (2019). WHO cardiovascular disease risk charts. *The Lancet Global Health*, 7(10), e1332–e1345. [DOI](https://doi.org/10.1016/S2214-109X(19)30318-3)
 
-[4] Jensen, Finn & Nielsen, Thomas. (2007). Bayesian Network and Decision Graphs. [DOI](https://doi.org/10.1007/978-0-387-68282-2).
+[4] Jensen, F. & Nielsen, T. (2007). *Bayesian Networks and Decision Graphs*. [DOI](https://doi.org/10.1007/978-0-387-68282-2)
 
-## Code of Conduct
+## Code of conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project, you agree to abide by its terms.
+This project includes a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[MIT License](LICENSE).

@@ -161,3 +161,8 @@ cython_debug/
 
 # pgmpy folder
 .pgmpy/
+
+# Web stack
+frontend/node_modules/
+frontend/dist/
+api/.venv/

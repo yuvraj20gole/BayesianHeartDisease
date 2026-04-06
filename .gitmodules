@@ -1,4 +1,4 @@
 [submodule "HeartDisease-Dashboard"]
 	path = HeartDisease-Dashboard
-	url = https://github.com/MatteoFasulo/HeartDisease-Dashboard
+	url = https://github.com/placeholder/HeartDisease-Dashboard.git
 	branch = master
