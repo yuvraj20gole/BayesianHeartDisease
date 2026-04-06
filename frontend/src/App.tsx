@@ -36,6 +36,52 @@ function riskColor(p: number): string {
   return "var(--risk-high)";
 }
 
+function escapeCsvField(value: string): string {
+  if (/[",\n\r]/.test(value)) return `"${value.replace(/"/g, '""')}"`;
+  return value;
+}
+
+function triggerCsvDownload(filename: string, csvBody: string): void {
+  const blob = new Blob([`\uFEFF${csvBody}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function buildRiskReportCsv(
+  inputVars: string[],
+  evidence: Record<string, string>,
+  result: PredictResponse
+): string {
+  const rows: string[][] = [
+    ["Field", "Value"],
+    [
+      "Disclaimer",
+      "Educational/demo Bayesian network output — not a medical diagnosis.",
+    ],
+    ["Generated (UTC)", new Date().toISOString()],
+    ["", ""],
+    ["Inputs", ""],
+  ];
+  for (const key of inputVars) {
+    const label = DISPLAY_NAMES[key] ?? key;
+    const v = evidence[key];
+    rows.push([label, v ? v : "(not specified — marginalized)"]);
+  }
+  rows.push(["", ""]);
+  rows.push(["Results", ""]);
+  rows.push(["P(heart disease positive, label 1)", result.probability_positive.toFixed(6)]);
+  const states = Object.keys(result.heart_disease).sort();
+  for (const state of states) {
+    rows.push([`P(Heart disease = ${state})`, result.heart_disease[state].toFixed(6)]);
+  }
+  return rows.map((row) => row.map((c) => escapeCsvField(c)).join(",")).join("\r\n");
+}
+
 /** FastAPI returns { "detail": string | object } on errors */
 async function apiErrorMessage(r: Response): Promise<string> {
   const text = await r.text();
@@ -130,6 +176,13 @@ export default function App() {
     setResult(null);
     setPredictError(null);
   };
+
+  const downloadReportCsv = useCallback(() => {
+    if (!result) return;
+    const stamp = new Date().toISOString().slice(0, 19).replace("T", "_").replace(/:/g, "-");
+    const csv = buildRiskReportCsv(inputVars, evidence, result);
+    triggerCsvDownload(`heart-disease-risk-report_${stamp}Z.csv`, csv);
+  }, [result, inputVars, evidence]);
 
   if (loadingSchema) {
     return (
@@ -289,6 +342,11 @@ export default function App() {
                 State <strong>{state}</strong>: {(p * 100).toFixed(1)}%
               </span>
             ))}
+          </div>
+          <div className="actions result-export">
+            <button type="button" className="ghost" onClick={downloadReportCsv}>
+              Download CSV report
+            </button>
           </div>
         </section>
       )}

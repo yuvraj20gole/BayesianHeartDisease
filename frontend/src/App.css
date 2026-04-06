@@ -169,6 +169,12 @@ header p {
   font-weight: 600;
 }
 
+.result .result-export {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
 .loading {
   color: var(--muted);
   font-size: 0.9rem;
