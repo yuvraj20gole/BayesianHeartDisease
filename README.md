@@ -109,6 +109,10 @@ Open **http://localhost:5173**. The dev server proxies `/api` to the API port se
 
 **Model path:** override with `MODEL_PATH=/absolute/path/to/heart_disease_model.bif` when starting uvicorn if the file is not at `../model/` relative to `api/main.py`.
 
+## Deployment
+
+**GitHub Pages** (static UI) plus a **hosted API** (e.g. Render): set the Actions secret `VITE_API_BASE_URL` to your API origin, enable Pages with the GitHub Actions source, and deploy the API with optional `CORS_ORIGINS` for extra domains. Step-by-step instructions are in [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## API (summary)
 
 | Method | Path | Purpose |

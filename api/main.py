@@ -99,16 +99,24 @@ def build_schema(model) -> dict[str, list[str]]:
 
 app = FastAPI(title="Heart disease BN API", version="0.1.0")
 
+_default_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+    "https://yuvraj20gole.github.io",
+]
+_extra = os.environ.get("CORS_ORIGINS", "").strip()
+if _extra:
+    _default_origins = _default_origins + [
+        o.strip() for o in _extra.split(",") if o.strip()
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:4173",
-        "http://127.0.0.1:4173",
-    ],
+    allow_origins=_default_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { apiUrl } from "./apiBase";
 import "./App.css";
 
 type SchemaResponse = {
@@ -57,7 +58,7 @@ export default function App() {
     let cancelled = false;
     (async () => {
       try {
-        const r = await fetch("/api/schema");
+        const r = await fetch(apiUrl("/api/schema"));
         if (!r.ok) throw new Error(await apiErrorMessage(r));
         const data = (await r.json()) as SchemaResponse;
         if (!cancelled) setSchema(data);
@@ -94,7 +95,7 @@ export default function App() {
       }
       setLoadingPredict(true);
       try {
-        const r = await fetch("/api/predict", {
+        const r = await fetch(apiUrl("/api/predict"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ evidence: body }),
@@ -162,10 +163,12 @@ export default function App() {
         </p>
       </header>
 
-      <div className="banner">
-        Development: Vite proxies <code>/api</code> to <code>127.0.0.1:8000</code>. Run the FastAPI server
-        separately.
-      </div>
+      {import.meta.env.DEV && (
+        <div className="banner">
+          Dev: Vite proxies <code>/api</code> to your API port. Production uses <code>VITE_API_BASE_URL</code>{" "}
+          (see deployment docs).
+        </div>
+      )}
 
       <form onSubmit={onSubmit}>
         <div className="form-grid">
