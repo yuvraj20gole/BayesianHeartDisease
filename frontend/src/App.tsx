@@ -12,6 +12,9 @@ type PredictResponse = {
   probability_positive: number;
 };
 
+/** Same default as vite.config.ts proxy; set VITE_API_PORT when your API uses another port. */
+const DEV_API_PORT = import.meta.env.VITE_API_PORT ?? "8000";
+
 const DISPLAY_NAMES: Record<string, string> = {
   Age: "Age group",
   Sex: "Sex",
@@ -67,7 +70,7 @@ export default function App() {
           setLoadError(
             e instanceof Error
               ? e.message
-              : "Could not load /api/schema. Start uvicorn on the port set by VITE_API_PORT (see vite.config.ts)."
+              : "Could not load /api/schema. Start the API on the same port Vite proxies to (see error panel below)."
           );
       } finally {
         if (!cancelled) setLoadingSchema(false);
@@ -143,10 +146,19 @@ export default function App() {
         </header>
         <div className="banner error">{loadError ?? "Unknown error"}</div>
         <p className="loading">
-          From <code>api/</code>, matching <code>VITE_API_PORT</code> (default 8000):{" "}
+          From <code>api/</code>, run the API on port <strong>{DEV_API_PORT}</strong> (Vite proxies{" "}
+          <code>/api</code> to <code>127.0.0.1:{DEV_API_PORT}</code>
+          {import.meta.env.VITE_API_PORT ? (
+            <> — set via <code>VITE_API_PORT</code></>
+          ) : (
+            <> — default; override with e.g. <code>VITE_API_PORT=8001 npm run dev</code></>
+          )}
+          ):
+        </p>
+        <p className="loading">
           <code style={{ color: "var(--accent)", wordBreak: "break-all" }}>
-            python3.11 -m pip install -r requirements.txt && python3.11 -m uvicorn main:app --host 127.0.0.1
-            --port 8001
+            cd api && python3.11 -m pip install -r requirements.txt && python3.11 -m uvicorn main:app --host
+            127.0.0.1 --port {DEV_API_PORT}
           </code>
         </p>
       </div>

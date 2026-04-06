@@ -92,7 +92,7 @@ BayesianHeartDisease/
 cd api
 python3.11 -m venv .venv && source .venv/bin/activate   # optional venv
 python3.11 -m pip install -r requirements.txt
-python3.11 -m uvicorn main:app --host 127.0.0.1 --port 8001
+python3.11 -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
 **2. Frontend** (new terminal, from `frontend/`):
@@ -100,12 +100,14 @@ python3.11 -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```bash
 cd frontend
 npm install
-VITE_API_PORT=8001 npm run dev
+npm run dev
 ```
 
-Open **http://localhost:5173**. The dev server proxies `/api` to the API port set by **`VITE_API_PORT`** (here **8001**).
+Open **http://localhost:5173**. By default, Vite proxies `/api` to **`127.0.0.1:8000`**, so uvicorn must use **port 8000** unless you change both sides.
 
-**Busy ports:** use another UI port, e.g. `VITE_API_PORT=8001 VITE_DEV_PORT=5175 npm run dev` (see `npm run dev:5175` in `frontend/package.json`).
+**Another API port (e.g. 8001):** `VITE_API_PORT=8001 npm run dev` and start uvicorn with `--port 8001`.
+
+**Busy UI port:** `npm run dev:5175` uses port **5175** for the dev server and still proxies to **8000** (override with `VITE_API_PORT` if your API is not on 8000).
 
 **Model path:** override with `MODEL_PATH=/absolute/path/to/heart_disease_model.bif` when starting uvicorn if the file is not at `../model/` relative to `api/main.py`.
 
