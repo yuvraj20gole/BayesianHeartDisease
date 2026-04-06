@@ -14,6 +14,8 @@ Same pattern as a typical split deployment: **static React** on [GitHub Pages](h
 
    Render sets `PORT`; the app listens on `0.0.0.0`.
 
+   **Python version:** New Render services default to **3.14**, which forces a slow (or failing) **NumPy source build** with our pinned stack. This repo includes `api/.python-version` (`3.11.9`). If Render ignores it, add **Environment** → `PYTHON_VERSION` = `3.11.9`.
+
 4. The repo root includes `model/heart_disease_model.bif`. With **root directory `api`**, `main.py` resolves the repo root as the parent of `api/`, so the model path stays valid.
 
 5. **Environment variables** (Render dashboard):
