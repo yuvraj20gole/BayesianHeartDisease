@@ -105,9 +105,14 @@ npm run dev
 
 Open **http://localhost:5173**. By default, Vite proxies `/api` to **`127.0.0.1:8000`**, so uvicorn must use **port 8000** unless you change both sides.
 
-**Another API port (e.g. 8001):** `VITE_API_PORT=8001 npm run dev` and start uvicorn with `--port 8001`.
+**Ports 8000 and/or 5173 already in use:** use the same API port in uvicorn and in Vite.
 
-**Busy UI port:** `npm run dev:5175` uses port **5175** for the dev server and still proxies to **8000** (override with `VITE_API_PORT` if your API is not on 8000).
+- **One-shot:** `npm run dev:alt` → UI **http://localhost:5174**, proxy to API **127.0.0.1:8001**. Start uvicorn with `--port 8001`.
+- **Persistent:** from `frontend/`, `cp .env.development.example .env.development.local` and edit ports; `npm run dev` picks them up automatically.
+
+**Busy UI port only:** `npm run dev:5175` keeps the API proxy on **8000** but serves the UI on **5175**.
+
+**Deployed site (GitHub Pages + Render):** your public app does **not** use these localhost ports; they only matter for local development.
 
 **Model path:** override with `MODEL_PATH=/absolute/path/to/heart_disease_model.bif` when starting uvicorn if the file is not at `../model/` relative to `api/main.py`.
 

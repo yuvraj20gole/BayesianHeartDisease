@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:alt": "VITE_API_PORT=8001 VITE_DEV_PORT=5174 vite",
     "dev:5175": "VITE_DEV_PORT=5175 vite",
     "dev:8000": "VITE_API_PORT=8000 VITE_DEV_PORT=5173 vite",
     "build": "tsc -b && vite build",

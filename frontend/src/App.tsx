@@ -12,8 +12,9 @@ type PredictResponse = {
   probability_positive: number;
 };
 
-/** Same default as vite.config.ts proxy; set VITE_API_PORT when your API uses another port. */
+/** Same defaults as vite.config.ts; override with VITE_* or .env.development.local */
 const DEV_API_PORT = import.meta.env.VITE_API_PORT ?? "8000";
+const DEV_UI_PORT = import.meta.env.VITE_DEV_PORT ?? "5173";
 
 const DISPLAY_NAMES: Record<string, string> = {
   Age: "Age group",
@@ -151,16 +152,36 @@ export default function App() {
           {import.meta.env.VITE_API_PORT ? (
             <> — set via <code>VITE_API_PORT</code></>
           ) : (
-            <> — default; override with e.g. <code>VITE_API_PORT=8001 npm run dev</code></>
+            <>
+              {" "}
+              — default; if 8000/5173 are busy use <code>npm run dev:alt</code> or{" "}
+              <code>.env.development.local</code>
+            </>
           )}
           ):
         </p>
-        <p className="loading">
-          <code style={{ color: "var(--accent)", wordBreak: "break-all" }}>
-            cd api && python3.11 -m pip install -r requirements.txt && python3.11 -m uvicorn main:app --host
-            127.0.0.1 --port {DEV_API_PORT}
-          </code>
-        </p>
+        {import.meta.env.DEV && (
+          <>
+            <p className="loading">
+              Open the UI at <strong>http://localhost:{DEV_UI_PORT}</strong>
+              {import.meta.env.VITE_DEV_PORT ? (
+                <> — <code>VITE_DEV_PORT</code></>
+              ) : null}
+            </p>
+            <p className="loading">
+              <code style={{ color: "var(--accent)", wordBreak: "break-all" }}>
+                cd api && python3.11 -m pip install -r requirements.txt && python3.11 -m uvicorn main:app
+                --host 127.0.0.1 --port {DEV_API_PORT}
+              </code>
+            </p>
+          </>
+        )}
+        {!import.meta.env.DEV && (
+          <p className="loading">
+            Production: confirm <code>VITE_API_BASE_URL</code> (GitHub Actions secret) matches your API, and{" "}
+            <code>/api/health</code> works in the browser.
+          </p>
+        )}
       </div>
     );
   }
