@@ -124,6 +124,7 @@ Open **http://localhost:5173**. By default, Vite proxies `/api` to **`127.0.0.1:
 
 | Method | Path | Purpose |
 |--------|------|---------|
+| `GET` | `/` | Service pointers (`health`, `schema`, `docs`). |
 | `GET` | `/api/health` | Liveness and model path. |
 | `GET` | `/api/schema` | Target variable and allowed state labels per variable. |
 | `POST` | `/api/predict` | JSON body `{"evidence":{"Age":"40-50","Sex":"M",...}}` — omit keys to marginalize. Returns `heart_disease` probabilities and `probability_positive` (state `1`). |

@@ -123,6 +123,17 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    """Render root URL — no trailing path; API lives under /api/*."""
+    return {
+        "service": "heart-disease-bn-api",
+        "health": "/api/health",
+        "schema": "/api/schema",
+        "docs": "/docs",
+    }
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "model": str(MODEL_PATH), "loaded": MODEL_PATH.is_file()}
