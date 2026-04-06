@@ -2,6 +2,71 @@
 
 This is an **end-to-end project**, not only a source repository: it covers **data and modelling** (Jupyter notebook), **serialized Bayesian networks** for reuse, **written documentation** (LaTeX report), and a **small web application** (FastAPI backend + React client) for interactive inference. The repository bundles these deliverables so the work can be reproduced, extended, and demonstrated.
 
+## Architecture
+
+### Logical layers
+
+| Layer | Role |
+|-------|------|
+| **Presentation** | React (Vite) single-page UI: forms for evidence, displays **P(Heart disease)**. |
+| **API** | FastAPI: REST endpoints; loads the frozen BN; no training at request time. |
+| **Inference** | `pgmpy` **VariableElimination** on the discrete BN (same family as the notebook). |
+| **Model artefact** | `model/heart_disease_model.bif` (and `.xml`) produced by the notebook export step. |
+| **Offline modelling** | Jupyter notebook: data prep, structure learning, fitting, evaluation, **export BIF/XML**. |
+
+### Runtime (web stack)
+
+```mermaid
+flowchart LR
+  subgraph client [Browser]
+    UI[React + Vite]
+  end
+  subgraph server [Python]
+    API[FastAPI main.py]
+    VE[VariableElimination]
+    BIF[(BIFReader / BN)]
+  end
+  UI -->|HTTP /api/*| API
+  API --> VE
+  VE --> BIF
+```
+
+In **development**, Vite proxies `/api` to the uvicorn port (`VITE_API_PORT`). The browser only talks to the dev server origin; the API is not exposed as a separate origin during local dev unless you call it directly.
+
+### Offline modelling path
+
+```mermaid
+flowchart LR
+  CSV[(data/*.csv)]
+  NB[notebook.ipynb]
+  PG[pgmpy: learn / fit]
+  OUT[(model/*.bif .xml)]
+  RPT[latex/ report]
+  CSV --> NB --> PG --> OUT
+  NB --> RPT
+```
+
+The notebook is the **source of truth** for how the network was built; the web app **consumes** the exported BIF only.
+
+### Repository skeleton
+
+```text
+BayesianHeartDisease/
+├── data/                    # Raw + cleaned tabular inputs
+├── model/                   # Serialized BN (BIF/XML) — input to api/
+├── notebook.ipynb           # Training / analysis / export pipeline
+├── latex/                   # Report sources → PDF
+├── api/
+│   ├── main.py              # FastAPI app, schema + predict
+│   └── requirements.txt
+├── frontend/
+│   ├── src/                 # React UI
+│   ├── vite.config.ts       # Dev proxy → API
+│   └── package.json
+├── requirements.txt         # Notebook + analysis stack
+└── README.md
+```
+
 ## Contents
 
 | Part | Description |
