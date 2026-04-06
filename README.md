@@ -135,20 +135,14 @@ From `latex/`, build with your usual tool, e.g.:
 cd latex && latexmk -pdf main.tex
 ```
 
-## Clone & optional submodule
+## Clone
 
 ```bash
 git clone https://github.com/yuvraj20gole/BayesianHeartDisease.git
 cd BayesianHeartDisease
 ```
 
-The **Streamlit** reference app is optional. If you use the `HeartDisease-Dashboard` submodule, set the **`url`** in `.gitmodules` to a repo you can access, then:
-
-```bash
-git submodule update --init --recursive
-```
-
-A public example deployment: [heart-disease-risk.streamlit.app](https://heart-disease-risk.streamlit.app).
+This repository does **not** use Git submodules. An older **Streamlit** reference UI exists elsewhere; a public example is [heart-disease-risk.streamlit.app](https://heart-disease-risk.streamlit.app). This project’s web UI is the **React + FastAPI** stack above.
 
 ## Background
 
