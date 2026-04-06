@@ -146,22 +146,22 @@ export default function App() {
           <h1>Heart disease risk</h1>
         </header>
         <div className="banner error">{loadError ?? "Unknown error"}</div>
-        <p className="loading">
-          From <code>api/</code>, run the API on port <strong>{DEV_API_PORT}</strong> (Vite proxies{" "}
-          <code>/api</code> to <code>127.0.0.1:{DEV_API_PORT}</code>
-          {import.meta.env.VITE_API_PORT ? (
-            <> — set via <code>VITE_API_PORT</code></>
-          ) : (
-            <>
-              {" "}
-              — default; if 8000/5173 are busy use <code>npm run dev:alt</code> or{" "}
-              <code>.env.development.local</code>
-            </>
-          )}
-          ):
-        </p>
         {import.meta.env.DEV && (
           <>
+            <p className="loading">
+              From <code>api/</code>, run the API on port <strong>{DEV_API_PORT}</strong> (Vite proxies{" "}
+              <code>/api</code> to <code>127.0.0.1:{DEV_API_PORT}</code>
+              {import.meta.env.VITE_API_PORT ? (
+                <> — <code>VITE_API_PORT</code></>
+              ) : (
+                <>
+                  {" "}
+                  — default; if 8000/5173 are busy use <code>npm run dev:alt</code> or{" "}
+                  <code>.env.development.local</code>
+                </>
+              )}
+              ).
+            </p>
             <p className="loading">
               Open the UI at <strong>http://localhost:{DEV_UI_PORT}</strong>
               {import.meta.env.VITE_DEV_PORT ? (
@@ -176,11 +176,27 @@ export default function App() {
             </p>
           </>
         )}
-        {!import.meta.env.DEV && (
-          <p className="loading">
-            Production: confirm <code>VITE_API_BASE_URL</code> (GitHub Actions secret) matches your API, and{" "}
-            <code>/api/health</code> works in the browser.
-          </p>
+        {import.meta.env.PROD && (
+          <div className="loading" style={{ maxWidth: "36rem", marginTop: "1rem" }}>
+            {!import.meta.env.VITE_API_BASE_URL ? (
+              <p>
+                <strong>Missing API URL in the build.</strong> Add the GitHub Actions secret{" "}
+                <code>VITE_API_BASE_URL</code> with your Render service origin only (example:{" "}
+                <code>https://your-service.onrender.com</code>, no trailing slash, no <code>/api</code>), then
+                re-run the <strong>Deploy to GitHub Pages</strong> workflow so the site is rebuilt.
+              </p>
+            ) : (
+              <p>
+                Confirm your API is up: open{" "}
+                <code>
+                  {import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "")}/api/health
+                </code>{" "}
+                in a new tab. It should return JSON with <code>&quot;status&quot;:&quot;ok&quot;</code>. If that
+                fails, fix the Render deploy first. If it works but this page still errors, check the browser
+                console for CORS messages.
+              </p>
+            )}
+          </div>
         )}
       </div>
     );
