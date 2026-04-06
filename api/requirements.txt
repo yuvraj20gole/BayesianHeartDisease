@@ -1,3 +1,6 @@
+# Install CPU-only PyTorch before pgmpy so pip does not pull the multi-GB CUDA stack from PyPI.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2
 fastapi>=0.109
 uvicorn[standard]>=0.27
 pydantic>=2

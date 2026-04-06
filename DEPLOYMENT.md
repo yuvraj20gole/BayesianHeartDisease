@@ -16,6 +16,8 @@ Same pattern as a typical split deployment: **static React** on [GitHub Pages](h
 
    **Python version:** New Render services default to **3.14**, which forces a slow (or failing) **NumPy source build** with our pinned stack. This repo includes `api/.python-version` (`3.11.9`). If Render ignores it, add **Environment** → `PYTHON_VERSION` = `3.11.9`.
 
+   **PyTorch:** `requirements.txt` pins **CPU-only** `torch` via PyTorch’s CPU wheel index so builds stay small (pgmpy does not need a GPU on the server for this API).
+
 4. The repo root includes `model/heart_disease_model.bif`. With **root directory `api`**, `main.py` resolves the repo root as the parent of `api/`, so the model path stays valid.
 
 5. **Environment variables** (Render dashboard):
