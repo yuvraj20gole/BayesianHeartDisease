@@ -99,25 +99,19 @@ def build_schema(model) -> dict[str, list[str]]:
 
 app = FastAPI(title="Heart disease BN API", version="0.1.0")
 
-_default_origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "http://localhost:4173",
-    "http://127.0.0.1:4173",
-    "https://yuvraj20gole.github.io",
-]
-_extra = os.environ.get("CORS_ORIGINS", "").strip()
-if _extra:
-    _default_origins = _default_origins + [
-        o.strip() for o in _extra.split(",") if o.strip()
-    ]
+# Public API (no cookies / API keys from the browser). Use * so GitHub Pages → Render fetch
+# always gets Access-Control-Allow-Origin. If you need a strict allowlist, set CORS_ORIGINS
+# (comma-separated); then credentials stay off unless you add cookie auth.
+_cors_origins = os.environ.get("CORS_ORIGINS", "").strip()
+if _cors_origins:
+    _allow_origins = [o.strip() for o in _cors_origins.split(",") if o.strip()]
+else:
+    _allow_origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_default_origins,
-    allow_credentials=True,
+    allow_origins=_allow_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

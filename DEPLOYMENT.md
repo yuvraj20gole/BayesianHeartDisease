@@ -19,8 +19,7 @@ Same pattern as a typical split deployment: **static React** on [GitHub Pages](h
 4. The repo root includes `model/heart_disease_model.bif`. With **root directory `api`**, `main.py` resolves the repo root as the parent of `api/`, so the model path stays valid.
 
 5. **Environment variables** (Render dashboard):
-   - Optional: `CORS_ORIGINS` — comma-separated extra origins if you use a custom domain, e.g. `https://www.example.com`
-   - The API already allows `https://yuvraj20gole.github.io` for GitHub Pages.
+   - Optional: `CORS_ORIGINS` — comma-separated **allowlist** origins only if you want to **restrict** who can call the API from a browser (omit `CORS_ORIGINS` to allow any origin; needed for GitHub Pages → Render `fetch` without CORS headaches).
 
 6. After deploy, note the public URL, e.g. `https://bayesian-heart-api.onrender.com` (your name will differ).
 
