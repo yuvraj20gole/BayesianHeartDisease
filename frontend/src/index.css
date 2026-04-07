@@ -1,12 +1,15 @@
 :root {
   color-scheme: light;
-  --bg: #0f1419;
-  --surface: #1a222d;
-  --border: #2d3a4a;
+  --bg: #0a0e14;
+  --bg-elevated: #0f1419;
+  --surface: #151c26;
+  --surface-2: #1c2633;
+  --border: #2a3544;
   --text: #e8eef4;
   --muted: #8b9cb0;
   --accent: #3d9cf5;
   --accent-dim: #2563a8;
+  --accent-glow: rgba(61, 156, 245, 0.25);
   --risk-low: #34d399;
   --risk-mid: #fbbf24;
   --risk-high: #f87171;
@@ -24,6 +27,8 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(61, 156, 245, 0.12), transparent),
+    var(--bg);
 }
 
 #root {

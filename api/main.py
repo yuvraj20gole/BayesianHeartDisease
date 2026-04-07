@@ -3,16 +3,31 @@
 from __future__ import annotations
 
 import os
+import uuid
 from functools import lru_cache
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 from pydantic import BaseModel, Field
 from pgmpy.inference import VariableElimination
 from pgmpy.readwrite import BIFReader
 
 TARGET = "HeartDisease"
+API_SEMVER = "0.2.0"
+
+
+class RequestIdMiddleware(BaseHTTPMiddleware):
+    """Echo/propagate X-Request-ID for tracing local and production logs."""
+
+    async def dispatch(self, request: Request, call_next):
+        rid = request.headers.get("x-request-id") or str(uuid.uuid4())
+        request.state.request_id = rid
+        response = await call_next(request)
+        response.headers["x-request-id"] = rid
+        return response
 
 
 def _resolve_model_path() -> Path:
@@ -97,7 +112,19 @@ def build_schema(model) -> dict[str, list[str]]:
     return out
 
 
-app = FastAPI(title="Heart disease BN API", version="0.1.0")
+app = FastAPI(
+    title="Heart disease BN API",
+    version=API_SEMVER,
+    description=(
+        "Loads a discrete Bayesian network (BIF) and answers **P(HeartDisease | evidence)** "
+        "via variable elimination. Omit evidence keys to marginalize. "
+        "Educational use only — not for clinical decisions."
+    ),
+    openapi_tags=[
+        {"name": "meta", "description": "Service info and health."},
+        {"name": "inference", "description": "Schema and prediction."},
+    ],
+)
 
 # Public API (no cookies / API keys from the browser). Use * so GitHub Pages → Render fetch
 # always gets Access-Control-Allow-Origin. If you need a strict allowlist, set CORS_ORIGINS
@@ -108,6 +135,7 @@ if _cors_origins:
 else:
     _allow_origins = ["*"]
 
+app.add_middleware(RequestIdMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allow_origins,
@@ -117,23 +145,44 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/", tags=["meta"])
 def root():
     """Render root URL — no trailing path; API lives under /api/*."""
     return {
         "service": "heart-disease-bn-api",
+        "version": API_SEMVER,
         "health": "/api/health",
+        "version_path": "/api/version",
         "schema": "/api/schema",
         "docs": "/docs",
     }
 
 
-@app.get("/api/health")
+@app.get("/api/version", tags=["meta"])
+def api_version():
+    """Semantic API version and model path (for demos and debugging)."""
+    loaded = MODEL_PATH.is_file()
+    return {
+        "api_version": API_SEMVER,
+        "model_path": str(MODEL_PATH),
+        "model_loaded": loaded,
+        "target_variable": TARGET,
+    }
+
+
+@app.get("/api/health", tags=["meta"])
 def health():
-    return {"status": "ok", "model": str(MODEL_PATH), "loaded": MODEL_PATH.is_file()}
+    """Process is up; `loaded` / `ready_for_inference` reflect the BIF on disk."""
+    loaded = MODEL_PATH.is_file()
+    return {
+        "status": "ok",
+        "model": str(MODEL_PATH),
+        "loaded": loaded,
+        "ready_for_inference": loaded,
+    }
 
 
-@app.get("/api/schema")
+@app.get("/api/schema", tags=["inference"])
 def schema():
     try:
         model = get_model()
@@ -154,7 +203,7 @@ def schema():
     return {"target": TARGET, "variables": variables}
 
 
-@app.post("/api/predict", response_model=PredictResponse)
+@app.post("/api/predict", response_model=PredictResponse, tags=["inference"])
 def predict(body: PredictRequest):
     try:
         model = get_model()
